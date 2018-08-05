@@ -10,7 +10,6 @@ response = session_fitbit.post(
         'Authorization':
             'Basic {}'.format(
                 base64.b64encode('{}:{}'.format(
-                # client id is invalid (the "228RY9")
                     '228RY9','4dd4118872d1497da1d253a16b13fb50'
                 ).encode('utf-8')).decode('utf-8')
             )
@@ -42,12 +41,8 @@ doc_decoded = doc_response.json()
 
 print doc_decoded
 
-# obtains the dictionary which contains a list from the readable JSON (Python) document
-doc_tokens = doc_decoded["fitbit_tokens"]
-
 # obtains the list of tokens from the readable JSON (Python) document and prints it out
-list_tokens = doc_tokens[0]
-print list_tokens
+list_tokens = doc_decoded["fitbit_tokens"][0]
 
 # places all the list values into a map
 fitbittokens_by_id = {
@@ -58,16 +53,31 @@ print fitbittokens_by_id
 
 doc_decoded["fitbit_tokens"] = list(fitbittokens_by_id.values())
 
-# not sure this works
-response = session_fitbit.put(
-      '{}/{}/{}'.format(
-          'https://tractdb.org/api'
-          'document',
-          'response'
-      ),
-      json=doc_response
+
+"""
+update = session_fitbit.put(
+   "{}/{}/{}".format(
+      "https://tractdb.org/api"
+      "document",
+      "fitbit_tokens"
+   ),
+   json=doc_decoded
 )
+"""
+# this works, but not the format fogarty wrote- the commented out section
+update = session_fitbit.put("https://tractdb.org/api/document/fitbit_tokens", json=doc_decoded)
 
-
-
-
+activitylogs = session_fitbit.get(
+   "https://api.fitbit.com/1/user/{}/{}/date/{}/{}.json".format(
+      "6Q9B5C",
+      "activities/calories",
+      "today",
+      "30d"
+   ),
+   headers={
+      'Authorization':'Bearer {}'.format(
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTMzMzY4NDk2LCJpYXQiOjE1MzMzMzk2OTZ9.odhYbBzUF9o384LUG7G0rfGp3j1152vfrJFtI9NNeZk'
+      )
+   }
+)
+print activitylogs.text
