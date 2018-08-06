@@ -16,10 +16,12 @@ response = session_fitbit.post(
     },
     data={
         'grant_type': 'refresh_token',
-        'refresh_token': 'c65d079aafaeca913377f8916236932b36bbeca2a8876ffc7ac4941db2a0a41e',
+        'refresh_token': '1ba7724ac3e501a94deb8dc6be3d1ee2ac3ffef0fb8895645efc16db5e47ece8',
         'redirect_uri': 'https://tractdb.org/configure/fitbit/callback'
     }
 )
+
+print response.text
 
 # part 2
 # logging in
@@ -39,8 +41,6 @@ doc_response = session_fitbit.get('https://tractdb.org/api/document/fitbit_token
 # like a dictionary
 doc_decoded = doc_response.json()
 
-print doc_decoded
-
 # obtains the list of tokens from the readable JSON (Python) document and prints it out
 list_tokens = doc_decoded["fitbit_tokens"][0]
 
@@ -49,10 +49,7 @@ fitbittokens_by_id = {
    list_tokens["user_id"]:list_tokens for list_tokens in doc_decoded["fitbit_tokens"]
 }
 
-print fitbittokens_by_id
-
 doc_decoded["fitbit_tokens"] = list(fitbittokens_by_id.values())
-
 
 """
 update = session_fitbit.put(
@@ -76,7 +73,7 @@ activitylogs = session_fitbit.get(
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTMzMzY4NDk2LCJpYXQiOjE1MzMzMzk2OTZ9.odhYbBzUF9o384LUG7G0rfGp3j1152vfrJFtI9NNeZk'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTMzNjAzNDUwLCJpYXQiOjE1MzM1NzQ2NTB9.R0pmd7zf8cBvw9sZBd8Ye0CCnwEfGo7In8hzeKHv3mc'
       )
    }
 )
