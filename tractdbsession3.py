@@ -4,6 +4,7 @@ import base64
 from datetime import date
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from datetime import timedelta
 
 # token renewal
 session_fitbit = requests.session()
@@ -20,7 +21,7 @@ response = session_fitbit.post(
     },
     data={
         'grant_type': 'refresh_token',
-        'refresh_token': '02082c3183c4581a775402ad17d9bc08906b57ee0bfd7cfdcd8572196fa6aaf7',
+        'refresh_token': 'fc3b61cf8159197778fb701e23618a8f4abce165ef82ce0abf9854edfcdab94d',
         'redirect_uri': 'https://tractdb.org/configure/fitbit/callback'
     }
 )
@@ -42,7 +43,7 @@ first_active = session_fitbit.get(
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDE5NTYxLCJpYXQiOjE1MzQ5OTA3NjF9.oB0rxKx-CX_sr3y4yrY2xHLzZxcFPweC0u3OsKuDFyM'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDIzMDY1LCJpYXQiOjE1MzQ5OTQyNjV9.OPyVxm2XaqgjMRc4bMgOn_yIcjcn-YDNrsZmjBwot6Y'
       )
    }
 )
@@ -58,7 +59,23 @@ print("today's date is %s" % today)
 # printing out the months between memberSince and today 
 
 cur_date = datetime.strptime(memberStart, '%Y-%m-%d').date()
-
+end_date = today
 while cur_date < today:
    print(cur_date.strftime("%m/%y"))
+   month_summary = session_fitbit.get(
+      "https://api.fitbit.com/1/user/{}/{}/date/{}/{}".format(
+         "6Q9B5C",
+         "activities/calories",
+         cur_date,
+         end_date
+      ),
+      headers={
+      'Authorization':'Bearer {}'.format(
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDIzMDY1LCJpYXQiOjE1MzQ5OTQyNjV9.OPyVxm2XaqgjMRc4bMgOn_yIcjcn-YDNrsZmjBwot6Y'
+         )
+      }
+   )
+   print month_summary.text
    cur_date += relativedelta(months=1)
+   end_date = cur_date
+
