@@ -21,7 +21,7 @@ response = session_fitbit.post(
     },
     data={
         'grant_type': 'refresh_token',
-        'refresh_token': 'fc3b61cf8159197778fb701e23618a8f4abce165ef82ce0abf9854edfcdab94d',
+        'refresh_token': '4b2c6f71c6f8d0a3873897225f56ae4cef6d326193ae831f95d0b252a8719486',
         'redirect_uri': 'https://tractdb.org/configure/fitbit/callback'
     }
 )
@@ -43,7 +43,7 @@ first_active = session_fitbit.get(
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDIzMDY1LCJpYXQiOjE1MzQ5OTQyNjV9.OPyVxm2XaqgjMRc4bMgOn_yIcjcn-YDNrsZmjBwot6Y'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDcwNTI5LCJpYXQiOjE1MzUwNDE3Mjl9.-lyyOkkJEmD_H2MagmXLavOLOlPWg6aysYhSdOnzTUs'
       )
    }
 )
@@ -51,19 +51,20 @@ first_active = session_fitbit.get(
 memberStart = first_active.json()["user"]["memberSince"]
 
 print("user has been a member since %s" % memberStart)
-# memberStart is currently in the format of 2018-06-22, a string
 
-today = date.today();
+today = date.today()
 print("today's date is %s" % today)
 
 # printing out the months between memberSince and today 
 
 cur_date = datetime.strptime(memberStart, '%Y-%m-%d').date()
-end_date = today
-while cur_date < today:
+
+while cur_date.month < today.month:
    print(cur_date.strftime("%m/%y"))
+   end_date = cur_date + relativedelta(months=1)
+
    month_summary = session_fitbit.get(
-      "https://api.fitbit.com/1/user/{}/{}/date/{}/{}".format(
+      "https://api.fitbit.com/1/user/{}/{}/date/{}/{}.json".format(
          "6Q9B5C",
          "activities/calories",
          cur_date,
@@ -71,11 +72,11 @@ while cur_date < today:
       ),
       headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDIzMDY1LCJpYXQiOjE1MzQ5OTQyNjV9.OPyVxm2XaqgjMRc4bMgOn_yIcjcn-YDNrsZmjBwot6Y'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM1MDcwNTI5LCJpYXQiOjE1MzUwNDE3Mjl9.-lyyOkkJEmD_H2MagmXLavOLOlPWg6aysYhSdOnzTUs'
          )
       }
    )
-   print month_summary.text
+   for x in range(0, 31): 
+      print(month_summary.json()["activities-calories"][x])
+   
    cur_date += relativedelta(months=1)
-   end_date = cur_date
-
