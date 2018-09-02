@@ -32,7 +32,7 @@ first_active = session_fitbit.get(
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1ODg2MzEyLCJpYXQiOjE1MzU4NTc1MTJ9.K68j_crvzUscwi_OuJ6zxlsmeRTDMTMmYwlxPjdngks'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1OTQwNzQ3LCJpYXQiOjE1MzU5MTE5NDd9.uhAligiaeAZ0byZKlLGQ91LgxGcOPUEN1qlhbyQi7IE'
       )
    }
 )
@@ -69,9 +69,11 @@ while cur_date.month < today.month:
       ),
       headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1ODg2MzEyLCJpYXQiOjE1MzU4NTc1MTJ9.K68j_crvzUscwi_OuJ6zxlsmeRTDMTMmYwlxPjdngks'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1OTQwNzQ3LCJpYXQiOjE1MzU5MTE5NDd9.uhAligiaeAZ0byZKlLGQ91LgxGcOPUEN1qlhbyQi7IE'
          )
       }
    )
-   print month_summary.text   
+   for day in month_summary.json()["activities-calories"]:
+      print day
    cur_date += relativedelta(months=1)
+
