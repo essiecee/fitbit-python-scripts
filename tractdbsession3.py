@@ -26,13 +26,24 @@ response = session_fitbit.post(
 # prints out a new set of tokens that can be used (access and refresh tokens)
 print response.text
 
+login = session_fitbit.post(
+    '{}/{}'.format(
+        'https://tractdb.org/api',
+        'login'
+    ),
+    json={
+       'account': 'essiecee',
+       'password': 'zxczxc'
+    }
+)
+
 first_active = session_fitbit.get(
    "https://api.fitbit.com/1/user/{}/profile.json".format(
       "6Q9B5C"
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1OTQwNzQ3LCJpYXQiOjE1MzU5MTE5NDd9.uhAligiaeAZ0byZKlLGQ91LgxGcOPUEN1qlhbyQi7IE'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
       )
    }
 )
@@ -69,11 +80,47 @@ while cur_date.month < today.month:
       ),
       headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM1OTQwNzQ3LCJpYXQiOjE1MzU5MTE5NDd9.uhAligiaeAZ0byZKlLGQ91LgxGcOPUEN1qlhbyQi7IE'
+            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
          )
       }
    )
+   
    for day in month_summary.json()["activities-calories"]:
-      print day
-   cur_date += relativedelta(months=1)
+      daily_activity = session_fitbit.get(
+         "https://api.fitbit.com/1/user/{}/activities/date/{}.json".format(
+            "6Q9B5C",
+            day["dateTime"]
+         ),
+         headers={
+            'Authorization':'Bearer {}'.format(
+                  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
+            )
+         }
+      )
+      
+      doc_daily_activity_name = "fitbit-{}-{}-{}".format(
+         "6Q9B5C",
+         "activity",
+         day["dateTime"]
+      )
+      print("DOC DAILY NAME IS %s" % doc_daily_activity_name)
+      document_retrieval = session_fitbit.get(
+            "https://tractdb.org/api/document/{}".format(
+            doc_daily_activity_name
+         ),
+      )
+      print("DOCumenT RETRIEVAL STATUS CODE IS %s" % document_retrieval.status_code)
+      if (document_retrieval.status_code != 404):
+         update = session_fitbit.put(
+            "{}/{}/{}".format(
+               "https://tractdb.org/api",
+               "document",
+               doc_daily_activity_name
+            ),
+            json=daily_activity.json()
+         )
+      print ("UpDatE STatus CoDe iS %s" % update.status_code)
+   
+cur_date += relativedelta(months=1)
 
+  
