@@ -4,9 +4,11 @@ import base64
 from dateutil.relativedelta import relativedelta
 from datetime import timedelta, date, datetime
 
-# token renewal
+# token renewal using the refresh token instead of manually signing in on tractdb
 session_fitbit = requests.session()
 
+# this changes each time the access token expires
+access_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM2MTk0NzY2LCJpYXQiOjE1MzYxNjU5NjZ9.9UF_e9fpfxO6UvJ0y7ll5MTpUpd7q0KEWVjdRRmDcdE"
 response = session_fitbit.post(
     'https://api.fitbit.com/oauth2/token',
     headers={
@@ -43,7 +45,7 @@ first_active = session_fitbit.get(
    ),
    headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
+            access_token
       )
    }
 )
@@ -58,6 +60,8 @@ print("today's date is %s" % today)
 # printing out the months between memberSince and today 
 memberStart_datetime = datetime.strptime(memberStart, '%Y-%m-%d').date()
 cur_date = datetime.strptime(memberStart, '%Y-%m-%d').date()
+
+stack_of_dates = []
 
 while cur_date.month < today.month:
    print(cur_date.strftime("%m/%Y"))
@@ -80,47 +84,72 @@ while cur_date.month < today.month:
       ),
       headers={
       'Authorization':'Bearer {}'.format(
-            'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
+            access_token
          )
       }
    )
    
    for day in month_summary.json()["activities-calories"]:
-      daily_activity = session_fitbit.get(
-         "https://api.fitbit.com/1/user/{}/activities/date/{}.json".format(
-            "6Q9B5C",
-            day["dateTime"]
-         ),
-         headers={
-            'Authorization':'Bearer {}'.format(
-                  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MDI5MjQ0LCJpYXQiOjE1MzYwMDA0NDR9.F2eCzoOCinwQVoiY4aJrBgMfm-O-X1ZLxgfBGH5P4dQ'
-            )
-         }
-      )
-      
-      doc_daily_activity_name = "fitbit-{}-{}-{}".format(
-         "6Q9B5C",
-         "activity",
-         day["dateTime"]
-      )
-      print("DOC DAILY NAME IS %s" % doc_daily_activity_name)
-      document_retrieval = session_fitbit.get(
-            "https://tractdb.org/api/document/{}".format(
-            doc_daily_activity_name
-         ),
-      )
-      print("DOCumenT RETRIEVAL STATUS CODE IS %s" % document_retrieval.status_code)
-      if (document_retrieval.status_code != 404):
-         update = session_fitbit.put(
-            "{}/{}/{}".format(
-               "https://tractdb.org/api",
-               "document",
-               doc_daily_activity_name
+      stack_of_dates.append(day["dateTime"])
+      for x in ["activities", "sleep"]:
+         if x == "activities":
+               track = 1.2
+         else:
+               track = 1
+         daily_summary = session_fitbit.get(
+            "https://api.fitbit.com/{}/user/{}/{}/date/{}.json".format(
+               track,
+               "6Q9B5C",
+               x, 
+               day["dateTime"]
             ),
-            json=daily_activity.json()
+            headers={
+               'Authorization':'Bearer {}'.format(
+                     access_token
+               )
+            }
          )
-      print ("UpDatE STatus CoDe iS %s" % update.status_code)
+         doc_daily_name = "fitbit-{}-{}-{}".format(
+            "6Q9B5C",
+            x,
+            day["dateTime"]
+         )
+         print("DOC DAILY NAME IS %s" % doc_daily_name)
+         document_retrieval = session_fitbit.get(
+               "https://tractdb.org/api/document/{}".format(
+               doc_daily_name
+            ),
+         )
+         # if the document does not exist, the status code that will be returned is 404
+         # inversely, if the document does exist, it will return a status code of 200
+         if (document_retrieval.status_code == 404):
+            update = session_fitbit.put(
+               "{}/{}/{}".format(
+                  "https://tractdb.org/api",
+                  "document",
+                  doc_daily_name
+               ),
+               json=daily_summary.json()
+            )
+   # for loop ends here         
+   cur_date += relativedelta(months=1)  
    
-cur_date += relativedelta(months=1)
+print(stack_of_dates)
+most_recent = stack_of_dates.pop()
+print("MOST RECENT DATE IS %s" % most_recent)
+document_last_imported = "fitbit-{}-activity-and-sleep-importstatus".format(
+   "6Q9B5C",
+)
+print("document last imported name is %s" % document_last_imported)
 
+lastdateupdate = session_fitbit.put(
+   "{}/{}/{}".format(
+      "https://tractdb.org/api",
+      "document",
+      document_last_imported
+   ),
+   json={"lastImportedDate": most_recent}
+)
+print("LAST DATE UPDATE STATUS CODE %s" % lastdateupdate.status_code)
+         
   
