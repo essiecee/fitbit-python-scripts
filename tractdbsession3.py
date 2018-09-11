@@ -8,7 +8,7 @@ from datetime import timedelta, date, datetime
 session_fitbit = requests.session()
 
 # this changes each time the access token expires
-access_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd251dCB3cHJvIHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM2MTk0NzY2LCJpYXQiOjE1MzYxNjU5NjZ9.9UF_e9fpfxO6UvJ0y7ll5MTpUpd7q0KEWVjdRRmDcdE"
+access_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MzU3OTY0LCJpYXQiOjE1MzYzMjkxNjR9.-SyaAE4BvbRYeBJFzN8TT61HAt5CZraY3-DrhOs4mFI"
 response = session_fitbit.post(
     'https://api.fitbit.com/oauth2/token',
     headers={
@@ -49,7 +49,6 @@ first_active = session_fitbit.get(
       )
    }
 )
-   
 memberStart = first_active.json()["user"]["memberSince"]
 
 print("user has been a member since %s" % memberStart)
@@ -59,10 +58,24 @@ print("today's date is %s" % today)
 
 # printing out the months between memberSince and today 
 memberStart_datetime = datetime.strptime(memberStart, '%Y-%m-%d').date()
-cur_date = datetime.strptime(memberStart, '%Y-%m-%d').date()
+
+last_updated = session_fitbit.get(
+   "{}/{}/{}".format(
+      "https://tractdb.org/api",
+      "document",
+      "fitbit-6Q9B5C-activity-and-sleep-importstatus"
+   )
+)
+if (last_updated.status_code == 200):
+   last_updated_stringform = last_updated.json()["lastImportedDate"]
+   print("last updated on %s" % last_updated_stringform)
+   last_updated_dateform = datetime.strptime(last_updated_stringform, '%Y-%m-%d').date()
+   start_update = last_updated_dateform + timedelta(days=1)
+   cur_date = start_update
+else:
+   cur_date = datetime.strptime(memberStart, '%Y-%m-%d').date()
 
 stack_of_dates = []
-
 while cur_date.month < today.month:
    print(cur_date.strftime("%m/%Y"))
    if cur_date.month == memberStart_datetime.month:
@@ -134,22 +147,24 @@ while cur_date.month < today.month:
    # for loop ends here         
    cur_date += relativedelta(months=1)  
    
-print(stack_of_dates)
-most_recent = stack_of_dates.pop()
-print("MOST RECENT DATE IS %s" % most_recent)
-document_last_imported = "fitbit-{}-activity-and-sleep-importstatus".format(
-   "6Q9B5C",
-)
-print("document last imported name is %s" % document_last_imported)
+if len(stack_of_dates) != 0:
+   print(stack_of_dates)
+   most_recent = stack_of_dates.pop()
+   print("MOST RECENT DATE IS %s" % most_recent)
+   document_last_imported = "fitbit-{}-activity-and-sleep-importstatus".format(
+      "6Q9B5C",
+   )
+   print("document last imported name is %s" % document_last_imported)
+   
+   lastdateupdate = session_fitbit.put(
+      "{}/{}/{}".format(
+         "https://tractdb.org/api",
+         "document",
+         document_last_imported
+      ),
+      json={"lastImportedDate": most_recent}
+   )
 
-lastdateupdate = session_fitbit.put(
-   "{}/{}/{}".format(
-      "https://tractdb.org/api",
-      "document",
-      document_last_imported
-   ),
-   json={"lastImportedDate": most_recent}
-)
-print("LAST DATE UPDATE STATUS CODE %s" % lastdateupdate.status_code)
-         
   
+  # you still need to obtain the last imported date and then update your code to 
+  # account for this document
