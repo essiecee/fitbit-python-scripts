@@ -8,7 +8,7 @@ from datetime import timedelta, date, datetime
 session_fitbit = requests.session()
 
 # this changes each time the access token expires
-access_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdhY3Qgd3NldCB3bG9jIiwiZXhwIjoxNTM2MzU3OTY0LCJpYXQiOjE1MzYzMjkxNjR9.-SyaAE4BvbRYeBJFzN8TT61HAt5CZraY3-DrhOs4mFI"
+access_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2UTlCNUMiLCJhdWQiOiIyMjhSWTkiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJ3aHIgd3BybyB3bnV0IHdzbGUgd3dlaSB3c29jIHdzZXQgd2FjdCB3bG9jIiwiZXhwIjoxNTM2ODAwMDc5LCJpYXQiOjE1MzY3NzEyNzl9.I2EW0CVyoxn7Cufj7UJIPRJL-zpVS22p2_f_aYKGtv4"
 response = session_fitbit.post(
     'https://api.fitbit.com/oauth2/token',
     headers={
@@ -164,7 +164,3 @@ if len(stack_of_dates) != 0:
       ),
       json={"lastImportedDate": most_recent}
    )
-
-  
-  # you still need to obtain the last imported date and then update your code to 
-  # account for this document
